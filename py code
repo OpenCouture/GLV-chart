@@ -1,0 +1,57 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+import ipywidgets as widgets
+from IPython.display import display
+from ipywidgets import interactive_output
+
+# Define the Generalized Lotka-Volterra model equations
+def generalized_lotka_volterra(t, y, a, b, c, d):
+    x, y = y
+    dx_dt = a * x - b * x * y
+    dy_dt = c * x * y - d * y
+    return [dx_dt, dy_dt]
+
+# Function to solve the model and plot the results
+def solve_and_plot_model(a, b, c, d):
+    # Define the initial conditions and time span
+    initial_conditions = [5, 10]
+    t_span = [0, 10]
+    
+    # Solve the model using scipy's solve_ivp function
+    solution = solve_ivp(generalized_lotka_volterra, t_span, initial_conditions, args=(a, b, c, d), dense_output=True)
+    
+    # Generate time points for plotting
+    t = np.linspace(t_span[0], t_span[1], 10000)
+    
+    # Evaluate the solution at the generated time points
+    y = solution.sol(t)
+    x_values, y_values = y[0], y[1]
+    
+    # Clear the previous plot
+    plt.clf()
+    
+    # Plot the population dynamics
+    plt.plot(t, x_values, label='Prey (x)')
+    plt.plot(t, y_values, label='Predator (y)')
+    plt.xlabel('Time')
+    plt.ylabel('Population')
+    plt.title('Generalized Lotka-Volterra Model')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+# Create sliders for the model parameters
+a_slider = widgets.FloatSlider(value=1.2, min=0.1, max=2.0, step=0.1, description='a:')
+b_slider = widgets.FloatSlider(value=0.4, min=0.1, max=2.0, step=0.1, description='b:')
+c_slider = widgets.FloatSlider(value=0.6, min=0.1, max=2.0, step=0.1, description='c:')
+d_slider = widgets.FloatSlider(value=0.8, min=0.1, max=2.0, step=0.1, description='d:')
+
+# Create a container for the sliders
+sliders_container = widgets.VBox([a_slider, b_slider, c_slider, d_slider])
+
+# Create interactive output with solve_and_plot_model function and sliders
+output = interactive_output(solve_and_plot_model, {'a': a_slider, 'b': b_slider, 'c': c_slider, 'd': d_slider})
+
+# Display the sliders and the plot
+display(widgets.HBox([sliders_container, output]))
